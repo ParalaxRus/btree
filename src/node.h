@@ -1,18 +1,33 @@
 #pragma once
 
 #include <vector>
+#include <optional>
+
+class Node;
+
+struct InsertEntry {
+    int val;
+    Node* child;
+};
 
 class Node final {
 public:
-    Node(bool leaf);
+    explicit Node(bool leaf);
+    Node(bool leaf, std::vector<int> vals, std::vector<Node*> children);
 
     bool leaf() const;
     bool contains(int val);
     int valueCount() const;
     int childrenCount() const;
+    const std::vector<int>& values() const;
+    const std::vector<Node*>& children() const;
     
-    void add(int val);
+    // Add new value to the node recursively
+    // Returns new entry if overlow happened and child had been split
+    std::optional<InsertEntry> add(int val);
     bool remove(int val);
+    
+    void insert(const InsertEntry& entry);
 
 private:
     static constexpr int kMaxChildren = 5;
@@ -23,13 +38,13 @@ private:
     // Searches for the leaf node which might contain target value
     Node* find(int val);
 
-    // Inserts value into the current leaf if possible and returns true
-    // Returns false if insert faieled because node contains max number of children
-    bool insert(int val);
+    InsertEntry split(bool leaf);
 
     // Gets index of the first value which is 
     // strictly greater than the specified
     int index(int val) const;
+
+    bool overflow() const;
 };
 
 inline bool Node::leaf() const {
@@ -42,4 +57,16 @@ inline int Node::valueCount() const {
 
 inline int Node::childrenCount() const {
     return this->_children.size();
+}
+
+inline const std::vector<int>& Node::values() const {
+    return this->_vals;
+}
+
+inline const std::vector<Node*>& Node::children() const {
+    return this->_children;
+}
+
+inline bool Node::overflow() const {
+    return (this->_children.size() > Node::kMaxChildren);
 }

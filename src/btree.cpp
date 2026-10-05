@@ -4,18 +4,19 @@ BPlusTree::BPlusTree() {
 }
 
 Node* BPlusTree::find(int val) const {
-    return nullptr;
+  return nullptr;
 }
 
 void BPlusTree::add(int val) {
-    auto entry = this->root->add(val);
-    if (entry) {
-        auto* newRoot = new Node(false, this->root->values(), this->root->children());
-        newRoot->insert(*entry);
-        this->root = newRoot;
-    }
+  auto entry = this->root->add(val);
+  if (entry) {
+    auto* newRoot =
+        new Node(false, this->root->values(), this->root->children());
+    newRoot->add((*entry).value, (*entry).child);
+    this->root = newRoot;
+  }
 }
 
 bool BPlusTree::remove(int val) {
-    return this->remove(val);   
+  return this->remove(val);
 }

@@ -17,7 +17,7 @@ Node::Node(bool leaf, vector<int> vals, vector<Node*> children)
 
 std::optional<Entry> Node::add(int val, Node* child) {
   if (this->leaf()) {
-    this->insert({val, child});
+    this->insert(Entry(val, child));
     if (!this->overflow()) {
       return {};
     }
@@ -128,7 +128,7 @@ Entry Node::split() {
     this->_children.erase(this->_children.begin() + idx, this->_children.end());
   }
 
-  return {split, node};
+  return Entry(split, node);
 }
 
 void Node::compact(int childIndex) {

@@ -8,6 +8,8 @@ class Node;
 struct Entry {
   int value;
   Node* child;
+  Entry(int value, Node* child) : value(value), child(child) {
+  }
 };
 
 class Node final {

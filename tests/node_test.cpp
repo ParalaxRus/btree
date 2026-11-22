@@ -4,6 +4,8 @@
 
 #include <vector>
 
+#include "serializer.h"
+
 using std::vector;
 
 namespace {
@@ -12,41 +14,30 @@ constexpr int kMaxChildren = 5;
 
 void check(const Node& node,
            bool expectLeaf,
-           int expectValueCount,
-           int expectChildCount,
-           const vector<int>& expectExistingValues,
-           const vector<int>& expectNonExistingValues) {
+           const vector<vector<int>>& expectedValues) {
   EXPECT_EQ(node.leaf(), expectLeaf);
-  EXPECT_EQ(node.keysCount(), expectValueCount);
-  EXPECT_EQ(node.childrenCount(), expectChildCount);
-
-  for (int val : expectExistingValues) {
-    EXPECT_TRUE(node.contains(val));
-  }
-
-  for (int val : expectNonExistingValues) {
-    EXPECT_FALSE(node.contains(val));
-  }
+  const auto actual = Serializer::bfs(&node);
+  EXPECT_EQ(expectedValues, actual);
 }
 
 }  // namespace
 
 TEST(NodeTest, EmptyLeaf) {
   Node node(true);
-  check(node, true, 0, 0, {}, {});
+  check(node, true, {{}});
 }
 
 TEST(NodeTest, Leaf) {
   Node node(true);
   EXPECT_EQ(node.add(1), std::nullopt);
-  check(node, true, 1, 0, {1}, {2});
+  check(node, true, {{1}});
 }
 
 TEST(NodeTest, LeafWithDuplicate) {
   Node node(true);
   EXPECT_EQ(node.add(1), std::nullopt);
   EXPECT_EQ(node.add(1), std::nullopt);
-  check(node, true, 2, 0, {1, 1}, {2});
+  check(node, true, {{1, 1}});
 }
 
 TEST(NodeTest, UnderflownLeaf) {
@@ -55,7 +46,7 @@ TEST(NodeTest, UnderflownLeaf) {
   for (int v : values) {
     EXPECT_EQ(node.add(v), std::nullopt);
   }
-  check(node, true, values.size(), 0, values, {6});
+  check(node, true, {values});
 }
 
 TEST(NodeTest, OverflownLeaf) {
@@ -64,18 +55,20 @@ TEST(NodeTest, OverflownLeaf) {
   for (int v : values) {
     EXPECT_EQ(node.add(v), std::nullopt);
   }
-  check(node, true, values.size(), 0, values, {6});
+  check(node, true, {values});
 
   auto res = node.add(6);
   EXPECT_NE(res, std::nullopt);
-  auto entry = *res;
 
-  EXPECT_EQ(entry.value, 4);
+  auto newRoot = *res;
+  EXPECT_EQ(newRoot.value, 4);
+
+  check(*newRoot.child, false, {{4}, {1, 2, 3, 4, 5, 6}});
 
   const Node* left = &node;
-  check(*left, true, 3, 0, {1, 2, 3}, {4});
+  check(*left, true, {{1, 2, 3}});
 
-  const Node* right = entry.child;
+  const Node* right = newRoot.child;
   EXPECT_NE(right, nullptr);
-  check(*right, true, 3, 0, {4, 5, 6}, {3});
+  check(*right, true, {{4, 5, 6}});
 }

@@ -9,6 +9,7 @@ add_executable(btree
     src/btree.cpp
     src/main.cpp
     src/node.cpp
+    src/serializer.cpp
 )
 
 # GoogleTest setup
@@ -27,9 +28,9 @@ enable_testing()
 
 add_executable(btree_tests
     tests/node_test.cpp
-    #tests/btree_test.cpp
 
     src/node.cpp
+    src/serializer.cpp
 )
 
 target_include_directories(btree_tests PRIVATE

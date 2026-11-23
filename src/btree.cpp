@@ -1,6 +1,8 @@
 #include "btree.h"
 
-BPlusTree::BPlusTree() {
+#include "node.h"
+
+BPlusTree::BPlusTree() : root(nullptr) {
 }
 
 Node* BPlusTree::find(int val) const {
@@ -10,9 +12,7 @@ Node* BPlusTree::find(int val) const {
 void BPlusTree::add(int val) {
   auto entry = this->root->add(val);
   if (entry) {
-    auto* newRoot =
-        new Node(false, this->root->values(), this->root->children());
-    newRoot->add((*entry).value, (*entry).child);
+    auto* newRoot = new Node(false, {(*entry).value}, {root, (*entry).child});
     this->root = newRoot;
   }
 }

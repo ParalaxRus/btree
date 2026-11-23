@@ -2,20 +2,22 @@
 
 #include <queue>
 
+#include "btree.h"
 #include "node.h"
 
 using std::queue;
 using std::vector;
 
-vector<vector<int>> Serializer::bfs(const Node* root) {
-  if (root == nullptr) {
+vector<vector<int>> Serializer::bfs(const BPlusTree& tree) {
+  if (tree.empty()) {
     return {};
   }
 
   vector<vector<int>> levels;
 
   queue<const Node*> q;
-  q.push(root);
+  q.push(tree.root);
+
   while (!q.empty()) {
     levels.push_back({});
     const int len = q.size();

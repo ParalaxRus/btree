@@ -27,8 +27,10 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 add_executable(btree_tests
+    tests/btree_test.cpp
     tests/node_test.cpp
 
+    src/btree.cpp
     src/node.cpp
     src/serializer.cpp
 )

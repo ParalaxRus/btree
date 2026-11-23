@@ -2,9 +2,9 @@
 
 #include <vector>
 
-class Node;
+class BPlusTree;
 
 class Serializer {
  public:
-  static std::vector<std::vector<int>> bfs(const Node* root);
+  static std::vector<std::vector<int>> bfs(const BPlusTree& tree);
 };

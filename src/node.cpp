@@ -106,12 +106,12 @@ void Node::insert(const Entry& entry) {
 }
 
 Entry Node::split() {
-  const int idx = this->_keys.size() / 2;
+  const int centerIdx = this->_keys.size() / 2;
 
   // Right node
   vector<int> vals;
   vector<Node*> children;
-  for (int i = idx; i < this->_keys.size(); ++i) {
+  for (int i = centerIdx; i < this->_keys.size(); ++i) {
     vals.push_back(this->_keys[i]);
     if (!this->leaf()) {
       children.push_back(this->_children[i]);
@@ -119,16 +119,16 @@ Entry Node::split() {
   }
   auto* node = new Node(this->leaf(), std::move(vals), std::move(children));
 
-  // Center is a split value
-  const int split = this->_keys[idx];
+  const int splitValue = this->_keys[centerIdx];
 
   // Left (current) node
-  this->_keys.erase(this->_keys.begin() + idx, this->_keys.end());
+  this->_keys.erase(this->_keys.begin() + centerIdx, this->_keys.end());
   if (!this->leaf()) {
-    this->_children.erase(this->_children.begin() + idx, this->_children.end());
+    this->_children.erase(this->_children.begin() + centerIdx,
+                          this->_children.end());
   }
 
-  return Entry(split, node);
+  return Entry(splitValue, node);
 }
 
 void Node::compact(int childIndex) {

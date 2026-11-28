@@ -8,15 +8,15 @@
 using std::queue;
 using std::vector;
 
-vector<vector<int>> Serializer::bfs(const BPlusTree& tree) {
+Serializer::Values Serializer::bfs(const BPlusTree& tree) {
   if (tree.empty()) {
     return {};
   }
 
-  vector<vector<int>> levels;
+  Serializer::Values levels;
 
   queue<const Node*> q;
-  q.push(tree.root);
+  q.push(tree._root);
 
   while (!q.empty()) {
     levels.push_back({});
@@ -27,7 +27,7 @@ vector<vector<int>> Serializer::bfs(const BPlusTree& tree) {
 
       const auto& vals = node->values();
       auto& last = levels.back();
-      last.insert(last.end(), vals.begin(), vals.end());
+      last.push_back(vals);
 
       const auto& children = node->children();
       for (const auto& child : children) {

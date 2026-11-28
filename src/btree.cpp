@@ -1,8 +1,26 @@
 #include "btree.h"
 
-#include "node.h"
+#include <stack>
 
-BPlusTree::BPlusTree() : root(nullptr) {
+BPlusTree::BPlusTree() : _root(new Node(true)) {
+}
+
+BPlusTree::~BPlusTree() {
+  if (this->_root != nullptr) {
+    std::stack<Node*> s;
+    s.push(this->_root);
+
+    while (!s.empty()) {
+      auto* n = s.top();
+      s.pop();
+
+      for (auto* child : n->children()) {
+        s.push(child);
+      }
+
+      delete n;
+    }
+  }
 }
 
 Node* BPlusTree::find(int val) const {
@@ -10,10 +28,10 @@ Node* BPlusTree::find(int val) const {
 }
 
 void BPlusTree::add(int val) {
-  auto entry = this->root->add(val);
+  auto entry = this->_root->add(val);
   if (entry) {
-    auto* newRoot = new Node(false, {(*entry).value}, {root, (*entry).child});
-    this->root = newRoot;
+    auto* newRoot = new Node(false, {(*entry).value}, {_root, (*entry).child});
+    this->_root = newRoot;
   }
 }
 

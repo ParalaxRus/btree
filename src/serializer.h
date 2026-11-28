@@ -6,5 +6,6 @@ class BPlusTree;
 
 class Serializer {
  public:
-  static std::vector<std::vector<int>> bfs(const BPlusTree& tree);
+  using Values = std::vector<std::vector<std::vector<int>>>;
+  static Values bfs(const BPlusTree& tree);
 };

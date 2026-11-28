@@ -18,9 +18,6 @@ Node::Node(bool leaf, vector<int> vals, vector<Node*> children)
 std::optional<Entry> Node::add(int val, Node* child) {
   if (this->leaf()) {
     this->insert(Entry(val, child));
-    if (!this->overflow()) {
-      return {};
-    }
     return split();
   }
 
@@ -31,6 +28,8 @@ std::optional<Entry> Node::add(int val, Node* child) {
   }
   auto entry = nextChild->add(val);
   if (!entry) {
+    // No overflow happen on the lower levels thus no insertion needed on the
+    // current level
     return {};
   }
 
@@ -101,32 +100,52 @@ void Node::insert(const Entry& entry) {
   const int idx = this->childIndex(entry.value);
   this->_keys.insert(this->_keys.begin() + idx, entry.value);
   if (entry.child != nullptr) {
-    this->_children.insert(this->_children.begin() + idx, entry.child);
+    this->_children.insert(this->_children.begin() + idx + 1, entry.child);
   }
 }
 
-Entry Node::split() {
+std::optional<Entry> Node::split() {
+  if (!this->overflow()) {
+    return {};
+  }
+
+  // Splits node in two. For the leaf we have to preserve all elements including
+  // center (split) element because of lookup however for the internal nodes we
+  // can eliminate this redundancy and move center element without preserving it
+  // in the node
   const int centerIdx = this->_keys.size() / 2;
 
   // Right node
-  vector<int> vals;
-  vector<Node*> children;
-  for (int i = centerIdx; i < this->_keys.size(); ++i) {
-    vals.push_back(this->_keys[i]);
-    if (!this->leaf()) {
-      children.push_back(this->_children[i]);
-    }
+  // offset used to preserve or not split element depending on the node type
+  const int offset = this->leaf() ? 0 : 1;
+  vector<int> rightKeys = {};
+  rightKeys.assign(this->_keys.begin() + centerIdx + offset, this->_keys.end());
+
+  vector<Node*> rightChildren = {};
+  if (!this->leaf()) {
+    const int idx = this->childIndex(this->_keys[centerIdx + offset]);
+    rightChildren.assign(this->_children.begin() + idx, this->_children.end());
   }
-  auto* node = new Node(this->leaf(), std::move(vals), std::move(children));
+
+  auto* node =
+      new Node(this->leaf(), std::move(rightKeys), std::move(rightChildren));
 
   const int splitValue = this->_keys[centerIdx];
 
-  // Left (current) node
-  this->_keys.erase(this->_keys.begin() + centerIdx, this->_keys.end());
+  // Left node
+  vector<int> leftKeys = {};
+  leftKeys.assign(this->_keys.begin(), this->_keys.begin() + centerIdx);
+
+  vector<Node*> leftChildren = {};
   if (!this->leaf()) {
-    this->_children.erase(this->_children.begin() + centerIdx,
-                          this->_children.end());
+    const int idx = this->childIndex(this->_keys[centerIdx + offset - 1]);
+    leftChildren.assign(this->_children.begin(),
+                        this->_children.begin() + idx + 1);
   }
+
+  // Current node = left node
+  this->_keys = leftKeys;
+  this->_children = leftChildren;
 
   return Entry(splitValue, node);
 }

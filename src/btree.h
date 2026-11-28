@@ -1,11 +1,20 @@
 #pragma once
 
-class Node;
+#include "iterator.h"
+#include "node.h"
 
 class BPlusTree {
  public:
+  using iterator = BfsIterator;
+  BfsIterator begin() const {
+    return iterator(this->_root);
+  }
+  BfsIterator end() const {
+    return BfsIterator();
+  }
+
   BPlusTree();
-  virtual ~BPlusTree() = default;
+  virtual ~BPlusTree();
 
   Node* find(int val) const;
 
@@ -14,10 +23,10 @@ class BPlusTree {
   bool empty() const;
 
  private:
-  Node* root;
+  Node* _root;
   friend class Serializer;
 };
 
 inline bool BPlusTree::empty() const {
-  return (root == nullptr);
+  return (_root->empty());
 }

@@ -14,6 +14,8 @@ struct Entry {
 
 class Node final {
  public:
+  inline static int kMaxChildren = 5;
+
   explicit Node(bool leaf);
   Node(bool leaf, std::vector<int> values, std::vector<Node*> children);
 
@@ -44,7 +46,6 @@ class Node final {
   bool empty() const;
 
  private:
-  static constexpr int kMaxChildren = 5;
   bool _leaf;
   std::vector<int> _keys;
   std::vector<Node*> _children;
@@ -55,7 +56,7 @@ class Node final {
 
   void insert(const Entry& entry);
 
-  Entry split();
+  std::optional<Entry> split();
 
   // Compacts current node if needed
   void compact(int childIndex);

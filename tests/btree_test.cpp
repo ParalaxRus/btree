@@ -11,12 +11,22 @@ using std::vector;
 
 namespace {
 
-constexpr int kMaxChildren = 5;
-
-void check(const BPlusTree& tree, const vector<vector<int>>& expectedValues) {
+void check(const BPlusTree& tree, const Serializer::Values& expected) {
   const auto actual = Serializer::bfs(tree);
-  EXPECT_EQ(expectedValues, actual);
+  EXPECT_EQ(expected, actual);
 }
+
+template <typename T>
+struct ScopedOverride {
+  ScopedOverride(T& t, T val) : _trg(t), _orig(t) {
+    _trg = val;
+  }
+  ~ScopedOverride() {
+    _trg = _orig;
+  }
+  T& _trg;
+  T _orig;
+};
 
 }  // namespace
 
@@ -28,30 +38,41 @@ TEST(BTreeTests, Empty) {
 TEST(BTreeTests, SingleValue) {
   BPlusTree tree;
   tree.add(1);
-  check(tree, {{1}});
+  check(tree, {{{1}}});
 }
 
 TEST(BTreeTests, TwoDuplicates) {
   BPlusTree tree;
   tree.add(1);
   tree.add(1);
-  check(tree, {{1, 1}});
+  check(tree, {{{1, 1}}});
 }
 
-TEST(BTreeTests, UnderflownRoot) {
+TEST(BTreeTests, MaxCapacity) {
   BPlusTree tree;
-  vector<int> values = {1, 2, 3, 4, 5};
-  for (int v : values) {
+  const vector<int> vals = {1, 2, 3, 4, 5};
+  for (int v : vals) {
     tree.add(v);
   }
-  check(tree, {values});
+  check(tree, {{vals}});
 }
 
-TEST(BTreeTests, OverflownRoot) {
+TEST(BTreeTests, OverflownLeaf) {
   BPlusTree tree;
-  vector<int> values = {1, 2, 3, 4, 5, 6};
-  for (int v : values) {
+  const vector<int> vals = {1, 2, 3, 4, 5, 6};
+  for (int v : vals) {
     tree.add(v);
   }
-  check(tree, {{4}, {1, 2, 3, 4, 5, 6}});
+  check(tree, {{{4}}, {{1, 2, 3}, {4, 5, 6}}});
+}
+
+TEST(BTreeTests, OverflownInternalNode) {
+  ScopedOverride guard(Node::kMaxChildren, 2);
+
+  BPlusTree tree;
+  const vector<int> vals = {1, 2, 3, 0, 4, 2, -1};
+  for (int v : vals) {
+    tree.add(v);
+  }
+  check(tree, {{{2}}, {{0}, {3}}, {{-1}, {0, 1}, {2, 2}, {3, 4}}});
 }

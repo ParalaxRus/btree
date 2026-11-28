@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(btree
     src/btree.cpp
+    src/iterator.cpp
     src/main.cpp
     src/node.cpp
     src/serializer.cpp
@@ -28,9 +29,11 @@ enable_testing()
 
 add_executable(btree_tests
     tests/btree_test.cpp
+    tests/iterator_test.cpp
     tests/node_test.cpp
 
     src/btree.cpp
+    src/iterator.cpp
     src/node.cpp
     src/serializer.cpp
 )
